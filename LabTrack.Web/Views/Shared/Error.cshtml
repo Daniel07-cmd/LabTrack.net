@@ -1,0 +1,27 @@
+﻿@model ErrorViewModel
+@{
+    ViewData["Title"] = "Error";
+}
+
+<div class="container py-5">
+    <div class="card border-0 shadow-sm rounded-4 mx-auto" style="max-width:640px;">
+        <div class="card-body p-5 text-center">
+            <i class="bi bi-exclamation-octagon-fill text-danger display-4 d-block mb-3"></i>
+            <h1 class="h3 fw-bold text-danger mb-3">Se produjo un error</h1>
+            <p class="text-muted mb-4">
+                La solicitud no se pudo procesar. Intente nuevamente o contacte al administrador del sistema.
+            </p>
+
+            @if (Model.ShowRequestId)
+            {
+                <p class="small text-muted mb-4">
+                    <strong>ID de la solicitud:</strong> <code>@Model.RequestId</code>
+                </p>
+            }
+
+            <a asp-controller="Home" asp-action="Index" class="btn btn-primary rounded-3 px-4">
+                <i class="bi bi-house-door me-1"></i> Volver al inicio
+            </a>
+        </div>
+    </div>
+</div>

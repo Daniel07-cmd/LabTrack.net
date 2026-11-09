@@ -1,0 +1,156 @@
+@model IEnumerable<LabTrack.Web.Models.Reserva>
+@{
+    ViewData["Title"] = "Gestión de Reservas";
+}
+
+<div class="container-fluid py-3">
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show rounded-3" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>@TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show rounded-3" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+        </div>
+    }
+    @if (TempData["Warning"] != null)
+    {
+        <div class="alert alert-warning alert-dismissible fade show rounded-3" role="alert">
+            <i class="bi bi-exclamation-circle-fill me-2"></i>@TempData["Warning"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+        </div>
+    }
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4 pb-2 border-bottom">
+        <div>
+            <h2 class="fw-bold text-dark mb-1">
+                <i class="bi bi-calendar2-check text-primary me-2"></i> Bandeja de Reservas
+            </h2>
+            <p class="text-muted mb-0">Apruebe, rechace o registre la devolución de las solicitudes del laboratorio.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a asp-controller="Equipos" asp-action="Index" class="btn btn-outline-primary btn-sm rounded-3">
+                <i class="bi bi-tools me-1"></i> Equipos
+            </a>
+            <a asp-controller="Account" asp-action="Logout" class="btn btn-outline-secondary btn-sm rounded-3">
+                <i class="bi bi-box-arrow-right me-1"></i> Cerrar sesión
+            </a>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-dark text-uppercase fs-7">
+                        <tr>
+                            <th class="py-3 ps-4">#</th>
+                            <th class="py-3">Estudiante</th>
+                            <th class="py-3">Equipo</th>
+                            <th class="py-3">Fecha / Horario</th>
+                            <th class="py-3">Estado</th>
+                            <th class="py-3 text-end pe-4">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model == null || !Model.Any())
+                        {
+                            <tr>
+                                <td colspan="6" class="text-center py-5 text-muted">
+                                    <i class="bi bi-calendar-x display-4 d-block mb-3 opacity-50"></i>
+                                    <h5>No hay reservas pendientes ni aprobadas</h5>
+                                    <p class="mb-0">Las nuevas solicitudes de los estudiantes aparecerán aquí.</p>
+                                </td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var reserva in Model)
+                            {
+                                <tr>
+                                    <td class="ps-4 text-muted font-monospace">@reserva.Id</td>
+                                    <td class="fw-semibold text-dark">
+                                        <i class="bi bi-person-circle text-secondary me-1"></i>
+                                        @(reserva.Usuario?.NombreCompleto ?? "—")
+                                    </td>
+                                    <td>
+                                        @(reserva.Equipo?.Nombre ?? "—")
+                                        <div class="small text-muted font-monospace">@reserva.Equipo?.CodigoInventario</div>
+                                    </td>
+                                    <td>
+                                        <i class="bi bi-calendar-event me-1"></i> @reserva.FechaUso.ToString("dd/MM/yyyy")
+                                        <div class="small text-muted font-monospace">@reserva.HoraInicio.ToString(@"hh\:mm") - @reserva.HoraFin.ToString(@"hh\:mm")</div>
+                                    </td>
+                                    <td>
+                                        @if (reserva.Estado == "Pendiente")
+                                        {
+                                            <span class="badge bg-warning-subtle text-warning rounded-pill px-3 py-2">
+                                                <i class="bi bi-hourglass-split me-1"></i> Pendiente
+                                            </span>
+                                        }
+                                        else if (reserva.Estado == "Aprobada")
+                                        {
+                                            <span class="badge bg-success-subtle text-success rounded-pill px-3 py-2">
+                                                <i class="bi bi-check-circle-fill me-1"></i> Aprobada
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary-subtle text-secondary rounded-pill px-3 py-2">@reserva.Estado</span>
+                                        }
+                                        @if (!string.IsNullOrWhiteSpace(reserva.JustificacionRechazo))
+                                        {
+                                            <div class="small text-danger mt-1">
+                                                <i class="bi bi-chat-left-text me-1"></i>@reserva.JustificacionRechazo
+                                            </div>
+                                        }
+                                    </td>
+                                    <td class="text-end pe-4">
+                                        @if (reserva.Estado == "Pendiente")
+                                        {
+                                            <div class="d-flex flex-column gap-2 align-items-end">
+                                                <form asp-action="Aprobar" method="post">
+                                                    <input type="hidden" name="id" value="@reserva.Id" />
+                                                    <button type="submit" class="btn btn-sm btn-success rounded-3">
+                                                        <i class="bi bi-check-lg me-1"></i> Aprobar
+                                                    </button>
+                                                </form>
+
+                                                <form asp-action="Rechazar" method="post" class="d-flex gap-1">
+                                                    <input type="hidden" name="id" value="@reserva.Id" />
+                                                    <input type="text" name="justificacion" class="form-control form-control-sm" style="min-width:160px"
+                                                           placeholder="Motivo de rechazo" required maxlength="255" />
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger rounded-3">
+                                                        <i class="bi bi-x-lg"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        }
+                                        else if (reserva.Estado == "Aprobada")
+                                        {
+                                            <form asp-action="RegistrarDevolucion" method="post">
+                                                <input type="hidden" name="id" value="@reserva.Id" />
+                                                <button type="submit" class="btn btn-sm btn-primary rounded-3">
+                                                    <i class="bi bi-box-arrow-in-down me-1"></i> Registrar devolución
+                                                </button>
+                                            </form>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted small">Sin acciones</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,162 @@
+@model IEnumerable<LabTrack.Web.Models.Equipo>
+@{
+    ViewData["Title"] = "Catálogo de equipos";
+    var categoriaActual = ViewData["CategoriaActual"] as string;
+    var usuarioNombre = Context.Session.GetString("UsuarioNombre");
+    var categorias = new[] { "Cómputo", "Electrónica", "Redes" };
+}
+
+<div class="container-fluid py-3">
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show rounded-3" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>@TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show rounded-3" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+        </div>
+    }
+    @if (TempData["Warning"] != null)
+    {
+        <div class="alert alert-warning alert-dismissible fade show rounded-3" role="alert">
+            <i class="bi bi-exclamation-circle-fill me-2"></i>@TempData["Warning"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+        </div>
+    }
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4 pb-2 border-bottom">
+        <div>
+            <h2 class="fw-bold text-dark mb-1">
+                <i class="bi bi-grid-3x3-gap-fill text-primary me-2"></i> Catálogo de Equipos
+            </h2>
+            <p class="text-muted mb-0">
+                Bienvenido@(string.IsNullOrEmpty(usuarioNombre) ? "" : $", {usuarioNombre}").
+                Seleccione un equipo disponible y solicite su reserva.
+            </p>
+        </div>
+        <a asp-controller="Account" asp-action="Logout" class="btn btn-outline-secondary btn-sm rounded-3">
+            <i class="bi bi-box-arrow-right me-1"></i> Cerrar sesión
+        </a>
+    </div>
+
+    <div class="d-flex flex-wrap gap-2 mb-4">
+        <a asp-action="Index" class="btn btn-sm @(string.IsNullOrEmpty(categoriaActual) ? "btn-primary" : "btn-outline-primary") rounded-pill px-3">
+            Todas
+        </a>
+        @foreach (var categoria in categorias)
+        {
+            <a asp-action="Index" asp-route-categoria="@categoria"
+               class="btn btn-sm @(categoriaActual == categoria ? "btn-primary" : "btn-outline-primary") rounded-pill px-3">
+                @categoria
+            </a>
+        }
+    </div>
+
+    @if (Model == null || !Model.Any())
+    {
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-body text-center py-5 text-muted">
+                <i class="bi bi-inbox display-4 d-block mb-3 opacity-50"></i>
+                <h5>No hay equipos disponibles en esta categoría</h5>
+                <p class="mb-0">Pruebe con otra categoría o consulte al encargado del laboratorio.</p>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="row g-4">
+            @foreach (var equipo in Model)
+            {
+                var disponible = equipo.Estado == "Disponible";
+                <div class="col-md-6 col-xl-4">
+                    <div class="card border-0 shadow-sm rounded-4 h-100">
+                        <div class="card-body p-4 d-flex flex-column">
+                            <div class="d-flex justify-content-between align-items-start gap-2 mb-3">
+                                <div class="kpi-icon bg-primary-subtle text-primary rounded-circle p-3">
+                                    <i class="bi bi-cpu fs-4"></i>
+                                </div>
+                                @if (disponible)
+                                {
+                                    <span class="badge bg-success-subtle text-success rounded-pill px-3 py-2">
+                                        <i class="bi bi-check-circle-fill me-1"></i> Disponible
+                                    </span>
+                                }
+                                else if (equipo.Estado == "Prestado")
+                                {
+                                    <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-2">
+                                        <i class="bi bi-arrow-left-right me-1"></i> Prestado
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning-subtle text-warning rounded-pill px-3 py-2">
+                                        <i class="bi bi-tools me-1"></i> @equipo.Estado
+                                    </span>
+                                }
+                            </div>
+
+                            <h5 class="fw-bold text-dark mb-1">@equipo.Nombre</h5>
+                            <p class="text-muted small mb-1">
+                                <i class="bi bi-upc-scan me-1"></i> @equipo.CodigoInventario
+                            </p>
+                            <p class="text-muted small mb-3">
+                                <i class="bi bi-tag me-1"></i> @equipo.Categoria
+                            </p>
+
+                            @if (disponible)
+                            {
+                                <div class="mt-auto">
+                                    <button class="btn btn-primary w-100 rounded-3" type="button"
+                                            data-bs-toggle="collapse" data-bs-target="#reserva-@equipo.Id"
+                                            aria-expanded="false" aria-controls="reserva-@equipo.Id">
+                                        <i class="bi bi-calendar-plus me-1"></i> Solicitar reserva
+                                    </button>
+
+                                    <div class="collapse mt-3" id="reserva-@equipo.Id">
+                                        <form asp-controller="Reservas" asp-action="Solicitar" method="post" class="border rounded-3 p-3 bg-light">
+                                            <input type="hidden" name="equipoId" value="@equipo.Id" />
+
+                                            <div class="mb-2">
+                                                <label for="fecha-@equipo.Id" class="form-label small fw-semibold mb-1">Fecha de uso</label>
+                                                <input id="fecha-@equipo.Id" type="date" name="fechaUso" class="form-control form-control-sm"
+                                                       min="@DateTime.Today.ToString("yyyy-MM-dd")" required />
+                                            </div>
+
+                                            <div class="row g-2 mb-3">
+                                                <div class="col-6">
+                                                    <label for="inicio-@equipo.Id" class="form-label small fw-semibold mb-1">Hora inicio</label>
+                                                    <input id="inicio-@equipo.Id" type="time" name="horaInicio" class="form-control form-control-sm" required />
+                                                </div>
+                                                <div class="col-6">
+                                                    <label for="fin-@equipo.Id" class="form-label small fw-semibold mb-1">Hora fin</label>
+                                                    <input id="fin-@equipo.Id" type="time" name="horaFin" class="form-control form-control-sm" required />
+                                                </div>
+                                            </div>
+
+                                            <button type="submit" class="btn btn-success btn-sm w-100 rounded-3">
+                                                <i class="bi bi-send me-1"></i> Enviar solicitud
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="mt-auto">
+                                    <button class="btn btn-secondary w-100 rounded-3" type="button" disabled>
+                                        <i class="bi bi-slash-circle me-1"></i> No disponible
+                                    </button>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

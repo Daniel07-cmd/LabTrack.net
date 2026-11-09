@@ -1,0 +1,19 @@
+# Build / publish
+bin/
+obj/
+publish/
+*.zip
+
+# Logs de ejecución local
+run*.out
+run*.err
+logs/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# Secretos locales (no subir credenciales)
+appsettings.*.local.json
+.vs/

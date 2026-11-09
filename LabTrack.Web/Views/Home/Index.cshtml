@@ -1,0 +1,197 @@
+﻿@model IEnumerable<LabTrack.Web.Models.Equipo>
+
+@{
+    ViewData["Title"] = "Panel de Control - LabTrack";
+
+    // Métricas dinámicas calculadas desde la base de datos
+    int totalEquipos = Model?.Count() ?? 0;
+    int operativos = Model?.Count(e => e.Estado == "Disponible") ?? 0;
+    int enMantenimiento = Model?.Count(e => e.Estado == "En Mantenimiento") ?? 0;
+    int fueraServicio = Model?.Count(e => e.Estado == "Fuera de Servicio") ?? 0;
+
+    double porcentajeOperativo = totalEquipos > 0 ? Math.Round((double)operativos / totalEquipos * 100, 1) : 0;
+}
+
+<div class="container-fluid py-3">
+    <!-- Hero Banner -->
+    <div class="p-4 p-md-5 mb-4 rounded-4 shadow-sm hero-card border-0">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <span class="badge bg-primary-subtle text-primary fw-semibold px-3 py-2 rounded-pill mb-3">
+                    <i class="bi bi-shield-check me-1"></i> Estado del Sistema: Estable (Producción)
+                </span>
+                <h1 class="display-5 fw-bold text-dark mb-2">Sistema de Gestión de Laboratorios</h1>
+                <p class="fs-5 text-secondary mb-4">
+                    Plataforma centralizada para el control analítico, calibración y supervisión operativa del parque de equipos LabTrack.
+                </p>
+                <a asp-controller="Equipos" asp-action="Index" class="btn btn-primary btn-lg shadow-sm rounded-3">
+                    <i class="bi bi-tools me-2"></i> Ir a Gestión de Equipos
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tarjetas KPI -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 h-100 kpi-card border-start border-4 border-primary">
+                <div class="card-body p-4 d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-uppercase text-muted fw-bold small mb-1">Equipos Registrados</p>
+                        <h2 class="display-5 fw-bold text-dark my-0">@totalEquipos</h2>
+                        <small class="text-muted"><i class="bi bi-activity text-primary me-1"></i> Monitoreo en tiempo real</small>
+                    </div>
+                    <div class="kpi-icon bg-primary-subtle text-primary rounded-circle p-3">
+                        <i class="bi bi-cpu fs-2"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 h-100 kpi-card border-start border-4 border-success">
+                <div class="card-body p-4 d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-uppercase text-muted fw-bold small mb-1">Disponibilidad Operativa</p>
+                        <h2 class="display-5 fw-bold text-dark my-0">@porcentajeOperativo%</h2>
+                        <small class="text-muted"><i class="bi bi-check-circle-fill text-success me-1"></i> @operativos equipos disponibles</small>
+                    </div>
+                    <div class="kpi-icon bg-success-subtle text-success rounded-circle p-3">
+                        <i class="bi bi-pie-chart-fill fs-2"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 h-100 kpi-card border-start border-4 border-warning">
+                <div class="card-body p-4 d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-uppercase text-muted fw-bold small mb-1">Mantenimiento / Incidencias</p>
+                        <h2 class="display-5 fw-bold text-dark my-0">@(enMantenimiento + fueraServicio)</h2>
+                        <small class="text-muted"><i class="bi bi-exclamation-triangle-fill text-warning me-1"></i> Requieren atención técnica</small>
+                    </div>
+                    <div class="kpi-icon bg-warning-subtle text-warning rounded-circle p-3">
+                        <i class="bi bi-wrench-adjustable fs-2"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sección de Analítica y Estado de Red -->
+    <div class="row g-4">
+        <!-- Gráfico de distribución -->
+        <div class="col-lg-7">
+            <div class="card border-0 shadow-sm rounded-4 p-4 h-100">
+                <h5 class="fw-bold text-dark mb-3"><i class="bi bi-bar-chart-line me-2"></i> Distribución Operativa por Estado</h5>
+                <div class="chart-container" style="position: relative; height:260px;">
+                    <canvas id="estadoEquiposChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Panel de Estado Técnico para el Directorio -->
+        <div class="col-lg-5">
+            <div class="card border-0 shadow-sm rounded-4 p-4 h-100">
+                <h5 class="fw-bold text-dark mb-3"><i class="bi bi-hdd-network me-2"></i> Métrica de Infraestructura</h5>
+                <ul class="list-group list-group-flush border-0">
+                    <li class="list-group-item d-flex justify-content-between align-items-center px-0 py-3 border-bottom-0">
+                        <div>
+                            <h6 class="mb-0 fw-semibold">Motor de Persistencia</h6>
+                            <small class="text-muted">Entity Framework Core 10 + SQL Server</small>
+                        </div>
+                        <span class="badge bg-success-subtle text-success rounded-pill px-3 py-2">Conectado</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center px-0 py-3 border-bottom-0">
+                        <div>
+                            <h6 class="mb-0 fw-semibold">Arquitectura de Patrón</h6>
+                            <small class="text-muted">Model-View-Controller (MVC)</small>
+                        </div>
+                        <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-2">Validado</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center px-0 py-3 border-bottom-0">
+                        <div>
+                            <h6 class="mb-0 fw-semibold">Auditoría & Seguridad Data</h6>
+                            <small class="text-muted">Protección CSRF con AntiForgeryToken</small>
+                        </div>
+                        <span class="badge bg-success-subtle text-success rounded-pill px-3 py-2">Activo</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Estilos CSS Personalizados -->
+<style>
+    .hero-card {
+        background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);
+        border: 1px solid #e2e8f0 !important;
+    }
+
+    .kpi-card {
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .kpi-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.08) !important;
+    }
+
+    .kpi-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 56px;
+        height: 56px;
+    }
+
+    .bg-primary-subtle { background-color: #e0f2fe !important; }
+    .bg-success-subtle { background-color: #dcfce7 !important; }
+    .bg-warning-subtle { background-color: #fef9c3 !important; }
+</style>
+
+<!-- Scripts JS para Gráficos Interactivos (Chart.js) -->
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const ctx = document.getElementById('estadoEquiposChart').getContext('2d');
+            
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Disponibles', 'En Mantenimiento', 'Fuera de Servicio'],
+                    datasets: [{
+                        label: 'Cantidad de Equipos',
+                        data: [@operativos, @enMantenimiento, @fueraServicio],
+                        backgroundColor: [
+                            '#10b981', // Verde
+                            '#f59e0b', // Ámbar
+                            '#ef4444'  // Rojo
+                        ],
+                        borderRadius: 8,
+                        borderSkipped: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { precision: 0 }
+                        },
+                        x: {
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+}
