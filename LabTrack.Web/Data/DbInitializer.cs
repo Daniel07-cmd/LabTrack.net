@@ -4,38 +4,70 @@ using Microsoft.EntityFrameworkCore;
 
 namespace LabTrack.Web.Data
 {
-    /// <summary>
-    /// Aplica las migraciones pendientes y crea los datos mínimos para que el
-    /// sistema sea usable tras el primer despliegue.
-    /// </summary>
     public static class DbInitializer
     {
         public static async Task InitializeAsync(LabTrackContext context, ILogger logger)
         {
+            // Aplica migraciones pendientes automáticamente
             await context.Database.MigrateAsync();
             logger.LogInformation("Migraciones de base de datos aplicadas correctamente.");
 
-            if (!await context.Usuarios.AnyAsync())
-            {
-                context.Usuarios.AddRange(
-                    new Usuario
-                    {
-                        CodigoInstitucional = "ENC001",
-                        Password = PasswordHasher.Hash("Admin123*"),
-                        NombreCompleto = "Encargado de Laboratorio",
-                        Rol = "Encargado"
-                    },
-                    new Usuario
-                    {
-                        CodigoInstitucional = "EST001",
-                        Password = PasswordHasher.Hash("Estudiante123*"),
-                        NombreCompleto = "Estudiante de Prueba",
-                        Rol = "Estudiante"
-                    });
+            // 1. Verificar o actualizar usuario Encargado
+            var encargadoEmail = "encargado@gmail.com";
+            var encargado = await context.Usuarios.FirstOrDefaultAsync(u => u.Email == encargadoEmail);
 
-                logger.LogInformation("Usuarios iniciales creados.");
+            if (encargado == null)
+            {
+                context.Usuarios.Add(new Usuario
+                {
+                    Email = encargadoEmail,
+                    Password = PasswordHasher.Hash("Admin123*"),
+                    NombreCompleto = "Encargado de Laboratorio",
+                    Rol = "Encargado",
+                    IntentosFallidos = 0,
+                    EstaBloqueado = false,
+                    EstaPenalizado = false
+                });
+                logger.LogInformation("Usuario encargado creado.");
+            }
+            else
+            {
+                // Forzar actualización de contraseña y desbloqueo para evitar bloqueos por pruebas
+                encargado.Password = PasswordHasher.Hash("Admin123*");
+                encargado.IntentosFallidos = 0;
+                encargado.EstaBloqueado = false;
+                encargado.BloqueadoHasta = null;
+                logger.LogInformation("Usuario encargado actualizado y desbloqueado.");
             }
 
+            // 2. Verificar o actualizar usuario Estudiante de prueba
+            var estudianteEmail = "estudiante@gmail.com";
+            var estudiante = await context.Usuarios.FirstOrDefaultAsync(u => u.Email == estudianteEmail);
+
+            if (estudiante == null)
+            {
+                context.Usuarios.Add(new Usuario
+                {
+                    Email = estudianteEmail,
+                    Password = PasswordHasher.Hash("Estudiante123*"),
+                    NombreCompleto = "Estudiante de Prueba",
+                    Rol = "Estudiante",
+                    IntentosFallidos = 0,
+                    EstaBloqueado = false,
+                    EstaPenalizado = false
+                });
+                logger.LogInformation("Usuario estudiante creado.");
+            }
+            else
+            {
+                estudiante.Password = PasswordHasher.Hash("Estudiante123*");
+                estudiante.IntentosFallidos = 0;
+                estudiante.EstaBloqueado = false;
+                estudiante.BloqueadoHasta = null;
+                logger.LogInformation("Usuario estudiante actualizado y desbloqueado.");
+            }
+
+            // 3. Inicializar equipos de ejemplo si la tabla está vacía
             if (!await context.Equipos.AnyAsync())
             {
                 context.Equipos.AddRange(

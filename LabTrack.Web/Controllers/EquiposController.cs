@@ -36,6 +36,7 @@ namespace LabTrack.Web.Controllers
         // GET: Equipos/Create
         public IActionResult Create()
         {
+            if (!EsEncargado()) return RedirectToAction("Login", "Account");
             return View();
         }
 
@@ -44,6 +45,8 @@ namespace LabTrack.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,Nombre,CodigoInventario,Categoria,Estado,FechaUltimaCalibracion")] Equipo equipo)
         {
+            if (!EsEncargado()) return RedirectToAction("Login", "Account");
+
             if (ModelState.IsValid)
             {
                 _context.Add(equipo);
@@ -57,6 +60,7 @@ namespace LabTrack.Web.Controllers
         // GET: Equipos/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
+            if (!EsEncargado()) return RedirectToAction("Login", "Account");
             if (id == null) return NotFound();
 
             var equipo = await _context.Equipos.FindAsync(id);
@@ -70,6 +74,7 @@ namespace LabTrack.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,Nombre,CodigoInventario,Categoria,Estado,FechaUltimaCalibracion")] Equipo equipo)
         {
+            if (!EsEncargado()) return RedirectToAction("Login", "Account");
             if (id != equipo.Id) return NotFound();
 
             if (ModelState.IsValid)
@@ -93,6 +98,7 @@ namespace LabTrack.Web.Controllers
         // GET: Equipos/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
+            if (!EsEncargado()) return RedirectToAction("Login", "Account");
             if (id == null) return NotFound();
 
             var equipo = await _context.Equipos
@@ -108,6 +114,8 @@ namespace LabTrack.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
+            if (!EsEncargado()) return RedirectToAction("Login", "Account");
+
             var equipo = await _context.Equipos.FindAsync(id);
             if (equipo != null)
             {
@@ -123,5 +131,9 @@ namespace LabTrack.Web.Controllers
         {
             return _context.Equipos.Any(e => e.Id == id);
         }
+
+        // Método auxiliar para validar el rol de encargado en sesión
+        private bool EsEncargado()
+            => HttpContext.Session.GetString("UsuarioRol") == "Encargado";
     }
-};
+}

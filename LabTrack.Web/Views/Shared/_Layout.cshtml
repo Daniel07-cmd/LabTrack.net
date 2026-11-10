@@ -27,11 +27,6 @@
                 </button>
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1 ms-2">
-                        <li class="nav-item">
-                            <a class="nav-link text-light fw-semibold" asp-area="" asp-controller="Home" asp-action="Index">
-                                <i class="bi bi-speedometer2 me-1"></i> Dashboard
-                            </a>
-                        </li>
                         @if (usuarioRol == "Encargado")
                         {
                             <li class="nav-item">
@@ -48,7 +43,7 @@
                         else if (usuarioRol == "Estudiante")
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-light fw-semibold" asp-area="" asp-controller="Catalogo" asp-action="Index">
+                                <a class="nav-link text-light fw-semibold" asp-area="" asp-area="" asp-controller="Catalogo" asp-action="Index">
                                     <i class="bi bi-grid-3x3-gap-fill me-1"></i> Catálogo
                                 </a>
                             </li>

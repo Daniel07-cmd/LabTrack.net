@@ -113,10 +113,10 @@ namespace LabTrack.Web.Migrations
                     b.Property<DateTime?>("BloqueadoHasta")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("CodigoInstitucional")
+                    b.Property<string>("Email")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<bool>("EstaBloqueado")
                         .HasColumnType("bit");

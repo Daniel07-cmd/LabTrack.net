@@ -1,123 +1,124 @@
-﻿@model IEnumerable<LabTrack.Web.Models.Equipo>
+﻿@{
+    ViewData["Title"] = "Bienvenido a LabTrack";
 
-@{
-    ViewData["Title"] = "Panel de Control - LabTrack";
-
-    // Métricas dinámicas calculadas desde la base de datos
-    int totalEquipos = Model?.Count() ?? 0;
-    int operativos = Model?.Count(e => e.Estado == "Disponible") ?? 0;
-    int enMantenimiento = Model?.Count(e => e.Estado == "En Mantenimiento") ?? 0;
-    int fueraServicio = Model?.Count(e => e.Estado == "Fuera de Servicio") ?? 0;
-
-    double porcentajeOperativo = totalEquipos > 0 ? Math.Round((double)operativos / totalEquipos * 100, 1) : 0;
+    var usuarioNombre = Context.Session.GetString("UsuarioNombre");
+    var usuarioRol = Context.Session.GetString("UsuarioRol");
+    bool estaAutenticado = !string.IsNullOrEmpty(usuarioRol);
 }
 
-<div class="container-fluid py-3">
-    <!-- Hero Banner -->
-    <div class="p-4 p-md-5 mb-4 rounded-4 shadow-sm hero-card border-0">
-        <div class="row align-items-center">
-            <div class="col-lg-8">
-                <span class="badge bg-primary-subtle text-primary fw-semibold px-3 py-2 rounded-pill mb-3">
-                    <i class="bi bi-shield-check me-1"></i> Estado del Sistema: Estable (Producción)
-                </span>
-                <h1 class="display-5 fw-bold text-dark mb-2">Sistema de Gestión de Laboratorios</h1>
-                <p class="fs-5 text-secondary mb-4">
-                    Plataforma centralizada para el control analítico, calibración y supervisión operativa del parque de equipos LabTrack.
-                </p>
-                <a asp-controller="Equipos" asp-action="Index" class="btn btn-primary btn-lg shadow-sm rounded-3">
-                    <i class="bi bi-tools me-2"></i> Ir a Gestión de Equipos
-                </a>
+<div class="container py-4">
+    <!-- Hero Section / Presentación Principal -->
+    <div class="p-5 mb-5 rounded-4 shadow-sm hero-section text-white text-center position-relative overflow-hidden">
+        <div class="position-relative z-1 py-4">
+            <span class="badge bg-white text-primary fw-semibold px-3 py-2 rounded-pill mb-3 shadow-sm">
+                <i class="bi bi-cpu-fill me-1"></i> Sistema Oficial de Gestión de Laboratorios
+            </span>
+            <h1 class="display-4 fw-bold mb-3">LabTrack</h1>
+            <p class="lead fs-4 mb-4 mx-auto" style="max-width: 750px;">
+                Plataforma tecnológica centralizada para el control analítico, inventario automatizado y programación de reservas de equipos en los laboratorios de ingeniería.
+            </p>
+
+            <!-- Acciones según estado de autenticación -->
+            <div class="d-flex flex-column align-items-center gap-3">
+                @if (!estaAutenticado)
+                {
+                    <a asp-controller="Account" asp-action="Login" class="btn btn-light btn-lg fw-semibold px-4 shadow rounded-3 text-primary" style="min-width: 260px;">
+                        <i class="bi bi-box-arrow-in-right me-2"></i> Iniciar Sesión
+                    </a>
+                    <a asp-controller="Account" asp-action="Register" class="btn btn-outline-light btn-lg fw-semibold px-4 rounded-3" style="min-width: 260px;">
+                        <i class="bi bi-person-plus me-2"></i> Registrarse
+                    </a>
+                }
+                else if (usuarioRol == "Encargado")
+                {
+                    <div class="d-flex flex-wrap justify-content-center gap-3">
+                        <a asp-controller="Equipos" asp-action="Index" class="btn btn-light btn-lg fw-semibold px-4 shadow rounded-3 text-primary">
+                            <i class="bi bi-tools me-2"></i> Ir a Gestión de Equipos
+                        </a>
+                        <a asp-controller="GestionReservas" asp-action="Index" class="btn btn-outline-light btn-lg fw-semibold px-4 rounded-3">
+                            <i class="bi bi-calendar2-check me-2"></i> Bandeja de Reservas
+                        </a>
+                    </div>
+                }
+                else if (usuarioRol == "Estudiante")
+                {
+                    <div class="d-flex flex-wrap justify-content-center gap-3">
+                        <a asp-controller="Catalogo" asp-action="Index" class="btn btn-light btn-lg fw-semibold px-4 shadow rounded-3 text-success">
+                            <i class="bi bi-grid-3x3-gap-fill me-2"></i> Explorar Catálogo y Reservar
+                        </a>
+                    </div>
+                }
             </div>
         </div>
     </div>
 
-    <!-- Tarjetas KPI -->
-    <div class="row g-4 mb-4">
-        <div class="col-md-4">
-            <div class="card border-0 shadow-sm rounded-4 h-100 kpi-card border-start border-4 border-primary">
-                <div class="card-body p-4 d-flex justify-content-between align-items-center">
-                    <div>
-                        <p class="text-uppercase text-muted fw-bold small mb-1">Equipos Registrados</p>
-                        <h2 class="display-5 fw-bold text-dark my-0">@totalEquipos</h2>
-                        <small class="text-muted"><i class="bi bi-activity text-primary me-1"></i> Monitoreo en tiempo real</small>
+    <!-- Sección de Características / Qué ofrece LabTrack -->
+    <div class="row text-center mb-5">
+        <div class="col-12 mb-4">
+            <h2 class="fw-bold text-dark">Pilares del Sistema</h2>
+            <p class="text-muted">Diseñado bajo estándares de arquitectura robusta y control de acceso seguro.</p>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card border-0 shadow-sm rounded-4 h-100 p-3 feature-card">
+                <div class="card-body">
+                    <div class="feature-icon bg-primary-subtle text-primary rounded-circle mx-auto mb-3">
+                        <i class="bi bi-laptop fs-3"></i>
                     </div>
-                    <div class="kpi-icon bg-primary-subtle text-primary rounded-circle p-3">
-                        <i class="bi bi-cpu fs-2"></i>
-                    </div>
+                    <h5 class="fw-bold text-dark">Control de Inventario</h5>
+                    <p class="text-muted small mb-0">
+                        Administración detallada de equipos de Cómputo, Electrónica y Redes, con seguimiento de estados y calibración técnica.
+                    </p>
                 </div>
             </div>
         </div>
 
-        <div class="col-md-4">
-            <div class="card border-0 shadow-sm rounded-4 h-100 kpi-card border-start border-4 border-success">
-                <div class="card-body p-4 d-flex justify-content-between align-items-center">
-                    <div>
-                        <p class="text-uppercase text-muted fw-bold small mb-1">Disponibilidad Operativa</p>
-                        <h2 class="display-5 fw-bold text-dark my-0">@porcentajeOperativo%</h2>
-                        <small class="text-muted"><i class="bi bi-check-circle-fill text-success me-1"></i> @operativos equipos disponibles</small>
+        <div class="col-md-4 mb-4">
+            <div class="card border-0 shadow-sm rounded-4 h-100 p-3 feature-card">
+                <div class="card-body">
+                    <div class="feature-icon bg-success-subtle text-success rounded-circle mx-auto mb-3">
+                        <i class="bi bi-calendar-check fs-3"></i>
                     </div>
-                    <div class="kpi-icon bg-success-subtle text-success rounded-circle p-3">
-                        <i class="bi bi-pie-chart-fill fs-2"></i>
-                    </div>
+                    <h5 class="fw-bold text-dark">Gestión de Reservas</h5>
+                    <p class="text-muted small mb-0">
+                        Validación automática de solapamientos horarios, control de turnos y aprobación de solicitudes por parte de los encargados.
+                    </p>
                 </div>
             </div>
         </div>
 
-        <div class="col-md-4">
-            <div class="card border-0 shadow-sm rounded-4 h-100 kpi-card border-start border-4 border-warning">
-                <div class="card-body p-4 d-flex justify-content-between align-items-center">
-                    <div>
-                        <p class="text-uppercase text-muted fw-bold small mb-1">Mantenimiento / Incidencias</p>
-                        <h2 class="display-5 fw-bold text-dark my-0">@(enMantenimiento + fueraServicio)</h2>
-                        <small class="text-muted"><i class="bi bi-exclamation-triangle-fill text-warning me-1"></i> Requieren atención técnica</small>
+        <div class="col-md-4 mb-4">
+            <div class="card border-0 shadow-sm rounded-4 h-100 p-3 feature-card">
+                <div class="card-body">
+                    <div class="feature-icon bg-warning-subtle text-warning rounded-circle mx-auto mb-3">
+                        <i class="bi bi-shield-lock fs-3"></i>
                     </div>
-                    <div class="kpi-icon bg-warning-subtle text-warning rounded-circle p-3">
-                        <i class="bi bi-wrench-adjustable fs-2"></i>
-                    </div>
+                    <h5 class="fw-bold text-dark">Seguridad y Roles</h5>
+                    <p class="text-muted small mb-0">
+                        Autenticación cifrada con PBKDF2, protección contra accesos no autorizados, bloqueos por intentos fallidos y penalizaciones automáticas.
+                    </p>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Sección de Analítica y Estado de Red -->
-    <div class="row g-4">
-        <!-- Gráfico de distribución -->
-        <div class="col-lg-7">
-            <div class="card border-0 shadow-sm rounded-4 p-4 h-100">
-                <h5 class="fw-bold text-dark mb-3"><i class="bi bi-bar-chart-line me-2"></i> Distribución Operativa por Estado</h5>
-                <div class="chart-container" style="position: relative; height:260px;">
-                    <canvas id="estadoEquiposChart"></canvas>
-                </div>
-            </div>
+    <!-- Sección Informativa / Módulos -->
+    <div class="row align-items-center bg-white rounded-4 shadow-sm p-4 p-md-5 mb-4 border">
+        <div class="col-lg-6 mb-4 mb-lg-0">
+            <h3 class="fw-bold text-dark mb-3">¿Cómo funciona LabTrack?</h3>
+            <p class="text-muted">
+                LabTrack optimiza el flujo operativo entre estudiantes y administradores de laboratorio mediante dos perfiles claramente diferenciados:
+            </p>
+            <ul class="list-unstyled text-secondary">
+                <li class="mb-2"><i class="bi bi-check-circle-fill text-primary me-2"></i><strong>Estudiantes:</strong> Pueden explorar el catálogo por categorías, verificar la disponibilidad de los equipos y solicitar reservas en horarios libres de cruces.</li>
+                <li class="mb-2"><i class="bi bi-check-circle-fill text-primary me-2"></i><strong>Encargados:</strong> Administran el inventario tecnológico, supervisan la bandeja de solicitudes y registran devoluciones con control de puntualidad.</li>
+            </ul>
         </div>
-
-        <!-- Panel de Estado Técnico para el Directorio -->
-        <div class="col-lg-5">
-            <div class="card border-0 shadow-sm rounded-4 p-4 h-100">
-                <h5 class="fw-bold text-dark mb-3"><i class="bi bi-hdd-network me-2"></i> Métrica de Infraestructura</h5>
-                <ul class="list-group list-group-flush border-0">
-                    <li class="list-group-item d-flex justify-content-between align-items-center px-0 py-3 border-bottom-0">
-                        <div>
-                            <h6 class="mb-0 fw-semibold">Motor de Persistencia</h6>
-                            <small class="text-muted">Entity Framework Core 10 + SQL Server</small>
-                        </div>
-                        <span class="badge bg-success-subtle text-success rounded-pill px-3 py-2">Conectado</span>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between align-items-center px-0 py-3 border-bottom-0">
-                        <div>
-                            <h6 class="mb-0 fw-semibold">Arquitectura de Patrón</h6>
-                            <small class="text-muted">Model-View-Controller (MVC)</small>
-                        </div>
-                        <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-2">Validado</span>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between align-items-center px-0 py-3 border-bottom-0">
-                        <div>
-                            <h6 class="mb-0 fw-semibold">Auditoría & Seguridad Data</h6>
-                            <small class="text-muted">Protección CSRF con AntiForgeryToken</small>
-                        </div>
-                        <span class="badge bg-success-subtle text-success rounded-pill px-3 py-2">Activo</span>
-                    </li>
-                </ul>
+        <div class="col-lg-6 text-center">
+            <div class="p-4 rounded-4 bg-light border">
+                <i class="bi bi-building-gear display-1 text-primary opacity-75"></i>
+                <h5 class="fw-bold text-dark mt-3">Infraestructura Tecnológica</h5>
+                <p class="text-muted small mb-0">Desarrollado en ASP.NET Core MVC con Entity Framework y SQL Server.</p>
             </div>
         </div>
     </div>
@@ -125,73 +126,28 @@
 
 <!-- Estilos CSS Personalizados -->
 <style>
-    .hero-card {
-        background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);
-        border: 1px solid #e2e8f0 !important;
+    .hero-section {
+        background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
     }
 
-    .kpi-card {
+    .feature-card {
         transition: transform 0.25s ease, box-shadow 0.25s ease;
     }
 
-    .kpi-card:hover {
-        transform: translateY(-4px);
+    .feature-card:hover {
+        transform: translateY(-5px);
         box-shadow: 0 10px 20px rgba(0,0,0,0.08) !important;
     }
 
-    .kpi-icon {
+    .feature-icon {
         display: flex;
         align-items: center;
         justify-content: center;
-        width: 56px;
-        height: 56px;
+        width: 64px;
+        height: 64px;
     }
 
     .bg-primary-subtle { background-color: #e0f2fe !important; }
     .bg-success-subtle { background-color: #dcfce7 !important; }
     .bg-warning-subtle { background-color: #fef9c3 !important; }
 </style>
-
-<!-- Scripts JS para Gráficos Interactivos (Chart.js) -->
-@section Scripts {
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const ctx = document.getElementById('estadoEquiposChart').getContext('2d');
-            
-            new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: ['Disponibles', 'En Mantenimiento', 'Fuera de Servicio'],
-                    datasets: [{
-                        label: 'Cantidad de Equipos',
-                        data: [@operativos, @enMantenimiento, @fueraServicio],
-                        backgroundColor: [
-                            '#10b981', // Verde
-                            '#f59e0b', // Ámbar
-                            '#ef4444'  // Rojo
-                        ],
-                        borderRadius: 8,
-                        borderSkipped: false
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: { precision: 0 }
-                        },
-                        x: {
-                            grid: { display: false }
-                        }
-                    }
-                }
-            });
-        });
-    </script>
-}
